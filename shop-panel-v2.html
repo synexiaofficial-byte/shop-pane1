@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>混雑ナビ — 店舗管理パネル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8fa; --white: #ffffff; --border: #e8eaed;
+    --text: #1a1a2e; --text-muted: #8892a4;
+    --green: #00c853; --green-light: #e8f9f0; --green-dark: #007a33;
+    --yellow: #ff8f00; --yellow-light: #fff8e8; --yellow-dark: #a65c00;
+    --red: #e53935; --red-light: #fdeaea; --red-dark: #9b1b1b;
+    --shadow: 0 2px 16px rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); font-family: 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-icon { width: 36px; height: 36px; background: #1a1a2e; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .header-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .header-sub { font-size: 11px; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .time-display { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text-muted); text-align: right; line-height: 1.4; }
+  .shop-selector { background: var(--white); margin: 16px; border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+  .shop-selector-label { font-size: 11px; color: var(--text-muted); font-family: 'Space Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .shop-select { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); background: var(--bg); outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a4' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; }
+  .current-status { margin: 0 16px 16px; border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; transition: all 0.4s ease; }
+  .current-status.green { background: var(--green-light); border: 1.5px solid rgba(0,200,83,0.25); }
+  .current-status.yellow { background: var(--yellow-light); border: 1.5px solid rgba(255,143,0,0.25); }
+  .current-status.red { background: var(--red-light); border: 1.5px solid rgba(229,57,53,0.25); }
+  .status-left { display: flex; flex-direction: column; gap: 2px; }
+  .status-label-small { font-size: 11px; color: var(--text-muted); font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+  .status-current-text { font-size: 22px; font-weight: 900; transition: color 0.4s; }
+  .status-current-text.green { color: var(--green-dark); }
+  .status-current-text.yellow { color: var(--yellow-dark); }
+  .status-current-text.red { color: var(--red-dark); }
+  .status-updated { font-size: 11px; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .status-emoji { font-size: 44px; line-height: 1; }
+  .buttons-section { padding: 0 16px; flex: 1; }
+  .buttons-label { font-size: 11px; color: var(--text-muted); font-family: 'Space Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .buttons-grid { display: flex; flex-direction: column; gap: 12px; }
+  .crowd-btn { width: 100%; padding: 24px 20px; border: none; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 16px; transition: all 0.15s ease; position: relative; overflow: hidden; text-align: left; }
+  .crowd-btn:active { transform: scale(0.97); }
+  .crowd-btn.green-btn { background: var(--green-light); border: 2px solid rgba(0,200,83,0.3); }
+  .crowd-btn.green-btn:hover,.crowd-btn.green-btn.active { background: var(--green); border-color: var(--green); }
+  .crowd-btn.green-btn:hover .btn-title,.crowd-btn.green-btn.active .btn-title { color: white; }
+  .crowd-btn.green-btn:hover .btn-desc,.crowd-btn.green-btn.active .btn-desc { color: rgba(255,255,255,0.8); }
+  .crowd-btn.green-btn:hover .btn-icon,.crowd-btn.green-btn.active .btn-icon { background: rgba(255,255,255,0.2); }
+  .crowd-btn.yellow-btn { background: var(--yellow-light); border: 2px solid rgba(255,143,0,0.3); }
+  .crowd-btn.yellow-btn:hover,.crowd-btn.yellow-btn.active { background: var(--yellow); border-color: var(--yellow); }
+  .crowd-btn.yellow-btn:hover .btn-title,.crowd-btn.yellow-btn.active .btn-title { color: white; }
+  .crowd-btn.yellow-btn:hover .btn-desc,.crowd-btn.yellow-btn.active .btn-desc { color: rgba(255,255,255,0.8); }
+  .crowd-btn.yellow-btn:hover .btn-icon,.crowd-btn.yellow-btn.active .btn-icon { background: rgba(255,255,255,0.2); }
+  .crowd-btn.red-btn { background: var(--red-light); border: 2px solid rgba(229,57,53,0.3); }
+  .crowd-btn.red-btn:hover,.crowd-btn.red-btn.active { background: var(--red); border-color: var(--red); }
+  .crowd-btn.red-btn:hover .btn-title,.crowd-btn.red-btn.active .btn-title { color: white; }
+  .crowd-btn.red-btn:hover .btn-desc,.crowd-btn.red-btn.active .btn-desc { color: rgba(255,255,255,0.8); }
+  .crowd-btn.red-btn:hover .btn-icon,.crowd-btn.red-btn.active .btn-icon { background: rgba(255,255,255,0.2); }
+  .btn-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; transition: background 0.15s; }
+  .green-btn .btn-icon { background: rgba(0,200,83,0.15); }
+  .yellow-btn .btn-icon { background: rgba(255,143,0,0.15); }
+  .red-btn .btn-icon { background: rgba(229,57,53,0.15); }
+  .btn-content { flex: 1; }
+  .btn-title { font-size: 18px; font-weight: 900; line-height: 1.2; margin-bottom: 3px; transition: color 0.15s; }
+  .green-btn .btn-title { color: var(--green-dark); }
+  .yellow-btn .btn-title { color: var(--yellow-dark); }
+  .red-btn .btn-title { color: var(--red-dark); }
+  .btn-desc { font-size: 12px; transition: color 0.15s; }
+  .green-btn .btn-desc { color: rgba(0,122,51,0.7); }
+  .yellow-btn .btn-desc { color: rgba(166,92,0,0.7); }
+  .red-btn .btn-desc { color: rgba(155,27,27,0.7); }
+  .btn-check { width: 24px; height: 24px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+  .crowd-btn.active .btn-check { opacity: 1; }
+  .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a2e; color: white; padding: 14px 24px; border-radius: 100px; font-size: 14px; font-weight: 700; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; z-index: 100; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .footer-spacer { height: 32px; }
+  .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; font-size: 16px; font-weight: 700; color: var(--text-muted); display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-icon">📍</div>
+    <div>
+      <div class="header-title">混雑ナビ 店舗パネル</div>
+      <div class="header-sub">STAFF CONTROL</div>
+    </div>
+  </div>
+  <div class="time-display">
+    <div id="currentTime">--:--</div>
+    <div id="currentDate">--/--</div>
+  </div>
+</header>
+
+<div class="shop-selector">
+  <div class="shop-selector-label">店舗を選択</div>
+  <select class="shop-select" id="shopSelect" onchange="onShopChange()">
+    <option value="">読み込み中...</option>
+  </select>
+</div>
+
+<div class="current-status green" id="currentStatus">
+  <div class="status-left">
+    <div class="status-label-small">現在の混雑状況</div>
+    <div class="status-current-text green" id="statusText">🟢 空いてる</div>
+    <div class="status-updated" id="statusUpdated">更新待ち</div>
+  </div>
+  <div class="status-emoji" id="statusEmoji">😊</div>
+</div>
+
+<div class="buttons-section">
+  <div class="buttons-label">状況を更新する</div>
+  <div class="buttons-grid">
+    <button class="crowd-btn green-btn" id="btn-green" onclick="updateStatus('green')">
+      <div class="btn-icon">🟢</div>
+      <div class="btn-content"><div class="btn-title">空いてる</div><div class="btn-desc">席に余裕あり・すぐ案内できる</div></div>
+      <div class="btn-check">✓</div>
+    </button>
+    <button class="crowd-btn yellow-btn" id="btn-yellow" onclick="updateStatus('yellow')">
+      <div class="btn-icon">🟡</div>
+      <div class="btn-content"><div class="btn-title">普通</div><div class="btn-desc">少し混んでいる・待つかも</div></div>
+      <div class="btn-check">✓</div>
+    </button>
+    <button class="crowd-btn red-btn" id="btn-red" onclick="updateStatus('red')">
+      <div class="btn-icon">🔴</div>
+      <div class="btn-content"><div class="btn-title">混雑</div><div class="btn-desc">満席に近い・かなり待ちあり</div></div>
+      <div class="btn-check">✓</div>
+    </button>
+  </div>
+</div>
+
+<div class="footer-spacer"></div>
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loadingOverlay">更新中...</div>
+
+<script>
+  const SUPABASE_URL = 'https://woysaqfpirvkogofvyou.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_pdoWnX8hMa3qkDqH41yDEw_zw-l1t0k';
+
+  let shops = [];
+  let currentShopId = null;
+
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('currentTime').textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    document.getElementById('currentDate').textContent = `${now.getMonth()+1}/${now.getDate()}`;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  async function fetchShops() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/shops?select=*&order=name`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      shops = await res.json();
+      const select = document.getElementById('shopSelect');
+      select.innerHTML = shops.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      if (shops.length > 0) {
+        currentShopId = shops[0].id;
+        updateStatusDisplay(shops[0].status);
+      }
+    } catch(e) {
+      showToast('❌ 店舗データの読み込みに失敗しました');
+    }
+  }
+
+  function onShopChange() {
+    const id = parseInt(document.getElementById('shopSelect').value);
+    currentShopId = id;
+    const shop = shops.find(s => s.id === id);
+    if (shop) updateStatusDisplay(shop.status);
+  }
+
+  const statusConfig = {
+    green: { text: '🟢 空いてる', emoji: '😊', colorClass: 'green' },
+    yellow: { text: '🟡 普通', emoji: '😐', colorClass: 'yellow' },
+    red: { text: '🔴 混雑', emoji: '😰', colorClass: 'red' },
+  };
+
+  function updateStatusDisplay(status) {
+    const config = statusConfig[status] || statusConfig.green;
+    document.getElementById('currentStatus').className = `current-status ${config.colorClass}`;
+    const textEl = document.getElementById('statusText');
+    textEl.className = `status-current-text ${config.colorClass}`;
+    textEl.textContent = config.text;
+    document.getElementById('statusEmoji').textContent = config.emoji;
+    ['green','yellow','red'].forEach(s => document.getElementById(`btn-${s}`).classList.remove('active'));
+    document.getElementById(`btn-${status}`).classList.add('active');
+  }
+
+  async function updateStatus(status) {
+    if (!currentShopId) { showToast('❌ 店舗を選択してください'); return; }
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    try {
+      const now = new Date().toISOString();
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/shops?id=eq.${currentShopId}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ status, updated_at: now })
+      });
+      if (res.ok) {
+        updateStatusDisplay(status);
+        const shop = shops.find(s => s.id === currentShopId);
+        if (shop) shop.status = status;
+        const now2 = new Date();
+        document.getElementById('statusUpdated').textContent = `${String(now2.getHours()).padStart(2,'0')}:${String(now2.getMinutes()).padStart(2,'0')} に更新`;
+        showToast('✅ 更新しました！');
+      } else {
+        showToast('❌ 更新に失敗しました');
+      }
+    } catch(e) {
+      showToast('❌ 通信エラーが発生しました');
+    }
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  fetchShops();
+</script>
+</body>
+</html>
