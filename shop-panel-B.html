@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>混雑ナビ — 店舗パネル</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:#f4f7f4; font-family:'M PLUS Rounded 1c',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+header {
+  background:white;
+  padding:16px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:2px solid #e8f0e8;
+  position:sticky; top:0; z-index:10;
+}
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-circle {
+  width:38px; height:38px;
+  background:linear-gradient(135deg,#3d9e5f,#56c47a);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  box-shadow:0 3px 8px rgba(61,158,95,0.3);
+}
+.logo-name { font-size:17px; font-weight:800; color:#1a3a1a; }
+.logo-tag { font-size:10px; color:#7ab87a; }
+.time-box { text-align:right; }
+.time-main { font-size:18px; font-weight:800; color:#1a3a1a; line-height:1; }
+.time-date { font-size:11px; color:#aaa; margin-top:2px; }
+
+.shop-wrap {
+  background:white;
+  margin:16px 16px 12px;
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+.shop-label { font-size:11px; font-weight:700; color:#7ab87a; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+.shop-select {
+  width:100%;
+  padding:12px 16px;
+  border:1.5px solid #d8e8d8;
+  border-radius:12px;
+  font-family:'M PLUS Rounded 1c',sans-serif;
+  font-size:15px; font-weight:700; color:#1a3a1a;
+  background:#f4f7f4;
+  outline:none; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237ab87a' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center;
+  cursor:pointer;
+}
+
+.status-now {
+  margin:0 16px 16px;
+  border-radius:16px;
+  padding:18px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:all 0.3s ease;
+}
+.status-now.green { background:#e8f7ed; border:2px solid #b8e0c4; }
+.status-now.yellow { background:#fff8e0; border:2px solid #ffe082; }
+.status-now.red { background:#fdeaea; border:2px solid #ffcdd2; }
+
+.status-left { }
+.status-tiny { font-size:11px; font-weight:700; color:#aaa; letter-spacing:1px; margin-bottom:4px; }
+.status-big { font-size:22px; font-weight:800; line-height:1.2; }
+.status-big.green { color:#2d8a4e; }
+.status-big.yellow { color:#b87a00; }
+.status-big.red { color:#b03030; }
+.status-when { font-size:11px; color:#bbb; margin-top:4px; }
+.status-emoji { font-size:48px; line-height:1; }
+
+.btn-section { padding:0 16px; flex:1; }
+.btn-label { font-size:11px; font-weight:700; color:#7ab87a; letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+.btn-grid { display:flex; flex-direction:column; gap:10px; }
+
+.crowd-btn {
+  width:100%; padding:20px 18px;
+  border:none; border-radius:16px;
+  cursor:pointer;
+  display:flex; align-items:center; gap:14px;
+  transition:all 0.15s ease;
+  text-align:left;
+}
+.crowd-btn:active { transform:scale(0.97); }
+
+.crowd-btn.gb { background:#e8f7ed; border:2px solid #b8e0c4; }
+.crowd-btn.gb:hover,.crowd-btn.gb.on { background:#3d9e5f; border-color:#3d9e5f; }
+.crowd-btn.gb:hover .bt,.crowd-btn.gb.on .bt { color:white; }
+.crowd-btn.gb:hover .bd,.crowd-btn.gb.on .bd { color:rgba(255,255,255,0.8); }
+.crowd-btn.gb:hover .bi,.crowd-btn.gb.on .bi { background:rgba(255,255,255,0.2); }
+
+.crowd-btn.yb { background:#fff8e0; border:2px solid #ffe082; }
+.crowd-btn.yb:hover,.crowd-btn.yb.on { background:#fb8c00; border-color:#fb8c00; }
+.crowd-btn.yb:hover .bt,.crowd-btn.yb.on .bt { color:white; }
+.crowd-btn.yb:hover .bd,.crowd-btn.yb.on .bd { color:rgba(255,255,255,0.8); }
+.crowd-btn.yb:hover .bi,.crowd-btn.yb.on .bi { background:rgba(255,255,255,0.2); }
+
+.crowd-btn.rb { background:#fdeaea; border:2px solid #ffcdd2; }
+.crowd-btn.rb:hover,.crowd-btn.rb.on { background:#e53935; border-color:#e53935; }
+.crowd-btn.rb:hover .bt,.crowd-btn.rb.on .bt { color:white; }
+.crowd-btn.rb:hover .bd,.crowd-btn.rb.on .bd { color:rgba(255,255,255,0.8); }
+.crowd-btn.rb:hover .bi,.crowd-btn.rb.on .bi { background:rgba(255,255,255,0.2); }
+
+.bi {
+  width:50px; height:50px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px; flex-shrink:0; transition:background 0.15s;
+}
+.gb .bi { background:rgba(61,158,95,0.12); }
+.yb .bi { background:rgba(251,140,0,0.12); }
+.rb .bi { background:rgba(229,57,53,0.12); }
+
+.bc { flex:1; }
+.bt { font-size:17px; font-weight:800; line-height:1.2; margin-bottom:2px; transition:color 0.15s; }
+.gb .bt { color:#2d8a4e; }
+.yb .bt { color:#b87a00; }
+.rb .bt { color:#b03030; }
+.bd { font-size:12px; transition:color 0.15s; }
+.gb .bd { color:rgba(45,138,78,0.6); }
+.yb .bd { color:rgba(184,122,0,0.6); }
+.rb .bd { color:rgba(176,48,48,0.6); }
+
+.bcheck {
+  width:22px; height:22px; border-radius:50%;
+  background:white; display:flex; align-items:center; justify-content:center;
+  font-size:13px; opacity:0; transition:opacity 0.2s; flex-shrink:0;
+}
+.crowd-btn.on .bcheck { opacity:1; }
+
+.toast {
+  position:fixed; bottom:28px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:#1a3a1a; color:white;
+  padding:13px 24px; border-radius:100px;
+  font-size:14px; font-weight:700;
+  box-shadow:0 6px 24px rgba(0,0,0,0.15);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap; z-index:100;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+.loading-overlay {
+  position:fixed; inset:0;
+  background:rgba(244,247,244,0.85);
+  display:none; align-items:center; justify-content:center;
+  z-index:200; font-size:15px; font-weight:700; color:#3d9e5f;
+}
+
+.spacer { height:32px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-circle">🍴</div>
+    <div>
+      <div class="logo-name">店舗パネル</div>
+      <div class="logo-tag">混雑ナビ スタッフ用</div>
+    </div>
+  </div>
+  <div class="time-box">
+    <div class="time-main" id="ct">--:--</div>
+    <div class="time-date" id="cd">--/--</div>
+  </div>
+</header>
+
+<div class="shop-wrap">
+  <div class="shop-label">店舗を選択</div>
+  <select class="shop-select" id="shopSel" onchange="onShopChange()">
+    <option>読み込み中...</option>
+  </select>
+</div>
+
+<div class="status-now green" id="statusBox">
+  <div class="status-left">
+    <div class="status-tiny">現在の状況</div>
+    <div class="status-big green" id="statusTxt">🟢 空いてる</div>
+    <div class="status-when" id="statusWhen">更新待ち</div>
+  </div>
+  <div class="status-emoji" id="statusEmoji">😊</div>
+</div>
+
+<div class="btn-section">
+  <div class="btn-label">状況を更新する</div>
+  <div class="btn-grid">
+    <button class="crowd-btn gb" id="bg" onclick="upd('green')">
+      <div class="bi">🟢</div>
+      <div class="bc"><div class="bt">空いてる</div><div class="bd">席に余裕あり・すぐ案内できる</div></div>
+      <div class="bcheck">✓</div>
+    </button>
+    <button class="crowd-btn yb" id="by" onclick="upd('yellow')">
+      <div class="bi">🟡</div>
+      <div class="bc"><div class="bt">普通</div><div class="bd">少し混んでいる・待つかも</div></div>
+      <div class="bcheck">✓</div>
+    </button>
+    <button class="crowd-btn rb" id="br" onclick="upd('red')">
+      <div class="bi">🔴</div>
+      <div class="bc"><div class="bt">混雑</div><div class="bd">満席に近い・かなり待ちあり</div></div>
+      <div class="bcheck">✓</div>
+    </button>
+  </div>
+</div>
+
+<div class="spacer"></div>
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="lo">更新中...</div>
+
+<script>
+const SU='https://woysaqfpirvkogofvyou.supabase.co';
+const SK='sb_publishable_pdoWnX8hMa3qkDqH41yDEw_zw-l1t0k';
+const SC={
+  green:{txt:'🟢 空いてる',emoji:'😊',cls:'green'},
+  yellow:{txt:'🟡 普通',emoji:'😐',cls:'yellow'},
+  red:{txt:'🔴 混雑',emoji:'😰',cls:'red'},
+};
+let shops=[],shopId=null;
+
+function tick(){
+  const n=new Date();
+  document.getElementById('ct').textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('cd').textContent=`${n.getMonth()+1}/${n.getDate()}`;
+}
+tick(); setInterval(tick,1000);
+
+async function fetchShops(){
+  try{
+    const r=await fetch(`${SU}/rest/v1/shops?select=*&order=name`,{headers:{'apikey':SK,'Authorization':'Bearer '+SK}});
+    shops=await r.json();
+    const sel=document.getElementById('shopSel');
+    sel.innerHTML=shops.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+    if(shops.length){shopId=shops[0].id;showStatus(shops[0].status);}
+  }catch(e){toast('❌ 読み込みに失敗しました');}
+}
+
+function onShopChange(){
+  shopId=parseInt(document.getElementById('shopSel').value);
+  const s=shops.find(x=>x.id===shopId);
+  if(s)showStatus(s.status);
+}
+
+function showStatus(st){
+  const c=SC[st]||SC.green;
+  const box=document.getElementById('statusBox');
+  box.className=`status-now ${c.cls}`;
+  const txt=document.getElementById('statusTxt');
+  txt.className=`status-big ${c.cls}`;
+  txt.textContent=c.txt;
+  document.getElementById('statusEmoji').textContent=c.emoji;
+  ['bg','by','br'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  const map={green:'bg',yellow:'by',red:'br'};
+  if(map[st])document.getElementById(map[st]).classList.add('on');
+}
+
+async function upd(st){
+  if(!shopId){toast('❌ 店舗を選択してください');return;}
+  document.getElementById('lo').style.display='flex';
+  try{
+    const res=await fetch(`${SU}/rest/v1/shops?id=eq.${shopId}`,{
+      method:'PATCH',
+      headers:{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({status:st,updated_at:new Date().toISOString()})
+    });
+    if(res.ok){
+      showStatus(st);
+      const s=shops.find(x=>x.id===shopId);
+      if(s)s.status=st;
+      const n=new Date();
+      document.getElementById('statusWhen').textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')} に更新`;
+      toast('✅ 更新しました！');
+    }else{toast('❌ 更新に失敗しました');}
+  }catch(e){toast('❌ 通信エラーが発生しました');}
+  document.getElementById('lo').style.display='none';
+}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+fetchShops();
+</script>
+</body>
+</html>
